@@ -10,14 +10,13 @@ class DataFetcher:
         self.data = {"posts": [], "users": []}
 
     def fetch_data(self):
-        """Fetches data from API endpoints with error handling."""
         print("Fetching data from API...")
         try:
-            # Fetching from Endpoint 1: Posts
+            # Fetching from Endpoint 1 i.e. Posts
             posts_response = requests.get(f"{self.base_url}/posts", timeout=10)
             posts_response.raise_for_status()
             
-            # Fetching from Endpoint 2: Users
+            # Fetching from Endpoint 2 i.e. Users
             users_response = requests.get(f"{self.base_url}/users", timeout=10)
             users_response.raise_for_status()
 
@@ -37,7 +36,6 @@ class DataFetcher:
             print(f"An unexpected error occurred: {e}")
 
     def save_to_cache(self):
-        """Stores fetched data in a local file."""
         try:
             with open(self.cache_file, 'w') as f:
                 json.dump(self.data, f, indent=4)
@@ -45,7 +43,6 @@ class DataFetcher:
             print(f"Error saving cache: {e}")
 
     def load_from_cache(self):
-        """Loads data from local storage if available."""
         if os.path.exists(self.cache_file):
             try:
                 with open(self.cache_file, 'r') as f:
@@ -56,18 +53,18 @@ class DataFetcher:
         return False
 
     def list_posts(self, user_id=None):
-        """Lists items with filtering options."""
         print(f"{'ID':<5} | {'Title':<50} | {'User ID'}")
         print("-" * 70)
         
         count = 0
         for post in self.data["posts"]:
-            # Filtering Logic
+            # logic for filtering
             if user_id and str(post['userId']) != str(user_id):
                 continue
                 
             # Truncate title for clean CLI output
-            title = (post['title'][:47] + '..') if len(post['title']) > 47 else post['title']
+            post_title = post.get('title', 'No Title')
+            title = (post_title[:47] + '..') if len(post_title) > 47 else post_title
             print(f"{post['id']:<5} | {title:<50} | {post['userId']}")
             count += 1
             
@@ -80,7 +77,7 @@ class DataFetcher:
         post = next((p for p in self.data["posts"] if str(p['id']) == str(post_id)), None)
         
         if post:
-            # Enrich data by finding the author (User)
+            # enrich data by finding the author i.e. User
             author = next((u for u in self.data["users"] if u['id'] == post['userId']), None)
             author_name = author['name'] if author else "Unknown"
 
@@ -97,7 +94,7 @@ class DataFetcher:
 def main():
     app = DataFetcher()
     
-    # Check if we have cached data, otherwise fetch fresh
+    # check if data is already fetched, if not fetch again
     if not app.load_from_cache():
         app.fetch_data()
 
